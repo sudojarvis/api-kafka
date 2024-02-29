@@ -1,5 +1,4 @@
-// Package main provides a simple HTTP server that interacts with Apache Kafka
-// to add and retrieve tasks.
+
 package main
 
 import (
