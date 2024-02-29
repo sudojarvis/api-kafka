@@ -12,7 +12,7 @@ This is a simple HTTP server built with Go and Fiber that interacts with Apache 
 
 1. Install Go: https://golang.org/doc/install
 2. Install Fiber: `go get -u github.com/gofiber/fiber/v2`
-3. Install Sarama: `go get -u github.com/Shopify/sarama`
+3. Install Sarama: `go get -u github.com/IBM/sarama`
 
 ## Usage
 
