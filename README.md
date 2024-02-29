@@ -1,3 +1,7 @@
+THINGS ADDED TO SCALE UP:
+
+ADD MULTIPLE BROKERS TO THE CLUSTER
+
 # Kafka Task API
 
 This is a simple HTTP server built with Go and Fiber that interacts with Apache Kafka to add and retrieve tasks.

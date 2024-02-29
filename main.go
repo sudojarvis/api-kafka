@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -15,8 +14,8 @@ type Task struct {
 	ID int `json:"id"`
 }
 
-// broker is the Kafka broker address.
-var broker = []string{"localhost:9092"}
+// brokers are the Kafka broker addresses.
+var brokers = []string{"localhost:9092", "localhost:9093", "localhost:9094"} // Kafka broker addresses for the cluster for the horizontal scaling
 
 var (
 	producerConfig *sarama.Config
@@ -36,11 +35,11 @@ func initializeKafkaConfig() {
 }
 
 // addToQueue adds a task to the Kafka queue.
-func addToQueue(task *Task, broker []string) error {
+func addToQueue(task *Task, brokers []string) error {
 	initializeKafkaConfig()
 
 	// Create a new synchronous producer.
-	conn, err := sarama.NewSyncProducer(broker, producerConfig)
+	conn, err := sarama.NewSyncProducer(brokers, producerConfig)
 	if err != nil {
 		return fmt.Errorf("Error creating producer: %w", err) // Wrap error for context
 	}
@@ -69,11 +68,11 @@ func addToQueue(task *Task, broker []string) error {
 }
 
 // getFromQueue retrieves a task from the Kafka queue.
-func getFromQueue(broker []string) (*Task, error) {
+func getFromQueue(brokers []string) (*Task, error) {
 	initializeKafkaConfig()
 
 	// Create a new consumer.
-	conn, err := sarama.NewConsumer(broker, consumerConfig)
+	conn, err := sarama.NewConsumer(brokers, consumerConfig)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating consumer: %w", err)
 	}
@@ -114,7 +113,7 @@ func main() {
 		}
 
 		go func() {
-			if err := addToQueue(task, broker); err != nil {
+			if err := addToQueue(task, brokers); err != nil {
 				fmt.Println("Error adding task to queue:", err)
 			}
 		}()
@@ -125,16 +124,15 @@ func main() {
 	// Handles incoming HTTP GET requests to retrieve tasks from the Kafka queue.
 	app.Get("/task", func(c *fiber.Ctx) error {
 		var task *Task
-		var err error // Error handling
-        //  WaitGroup to wait for the task to be retrieved from the queue
+		var err error
 		wg := sync.WaitGroup{}
 		wg.Add(1)
-		go func() { // Retrieve task from queue
-			defer wg.Done()  
-			task, err = getFromQueue(broker)
+		go func() {
+			defer wg.Done()
+			task, err = getFromQueue(brokers)
 		}()
 
-		wg.Wait() // Wait for the task to be retrieved from the queue
+		wg.Wait()
 
 		if err != nil {
 			fmt.Println("Error getting task from queue:", err)
